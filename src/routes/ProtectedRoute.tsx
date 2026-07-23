@@ -4,7 +4,11 @@ import { ROUTES } from '@/constants'
 import { useAuth } from '@/features/auth/hooks/useAuth'
 
 export function ProtectedRoute({ children }: { children: ReactNode }) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isInitializing } = useAuth()
+
+  if (isInitializing) {
+    return null
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />

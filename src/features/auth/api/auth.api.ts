@@ -28,3 +28,14 @@ export async function verifyOtp(
     accessToken: `demo-token-${mobileNumber}`,
   }
 }
+
+export async function refreshSession(
+  mobileNumber: string,
+): Promise<{ technician: Technician; accessToken: string }> {
+  await wait(API_CONSTANTS.SIMULATED_DELAY_MS)
+
+  return {
+    technician: { id: mobileNumber, mobileNumber },
+    accessToken: `demo-token-${mobileNumber}`,
+  }
+}

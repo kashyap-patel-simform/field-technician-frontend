@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useNavigate } from 'react-router-dom'
+import { Navigate, useNavigate } from 'react-router-dom'
 import { Wrench } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ROUTES, VALIDATION_PATTERNS, VALIDATION_MESSAGES, ERROR_MESSAGES } from '@/constants'
 import { sendOtp } from '@/features/auth/api/auth.api'
+import { useAuth } from '@/features/auth/hooks/useAuth'
 
 const loginSchema = z.object({
   mobileNumber: z
@@ -21,6 +22,7 @@ type LoginFormValues = z.infer<typeof loginSchema>
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { isAuthenticated, isInitializing } = useAuth()
   const [serverError, setServerError] = useState<string | null>(null)
 
   const {
@@ -31,6 +33,14 @@ export function LoginPage() {
     resolver: zodResolver(loginSchema),
     defaultValues: { mobileNumber: '' },
   })
+
+  if (isInitializing) {
+    return null
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to={ROUTES.DASHBOARD} replace />
+  }
 
   async function onSubmit(values: LoginFormValues) {
     setServerError(null)
