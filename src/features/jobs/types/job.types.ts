@@ -16,9 +16,30 @@ export const JobStatus = {
 
 export type JobStatus = (typeof JobStatus)[keyof typeof JobStatus]
 
+export const JobFilter = {
+  TODAY: 'TODAY',
+  UPCOMING: 'UPCOMING',
+  COMPLETED: 'COMPLETED',
+  HIGH_PRIORITY: 'HIGH_PRIORITY',
+} as const
+
+export type JobFilter = (typeof JobFilter)[keyof typeof JobFilter]
+
 export interface JobsSummary {
   totalAssigned: number
   dueToday: number
   highPriority: number
   pendingSync: number
+}
+
+export interface Job {
+  id: string
+  jobNumber: string
+  customerName: string
+  address: string
+  scheduledAt: number
+  priority: JobPriority
+  status: JobStatus
+  distanceKm?: number
+  isPendingSync: boolean
 }
