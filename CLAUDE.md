@@ -290,6 +290,39 @@ Avoid unnecessary re-renders.
 - Readable Code
 - Feature Isolation
 
+## UI Components
+
+Use **shadcn/ui** for all UI components. Available:
+
+- Button
+- Input
+- Label
+- Card
+- InputOTP
+
+All components are in `src/components/ui/` and are styled with Tailwind CSS using CSS variables for theming.
+
+### shadcn/ui Guidelines
+
+- Only use shadcn/ui components — no external UI libraries.
+- All components support dark mode via CSS variables (OKLCH).
+- Use semantic HTML and proper ARIA labels.
+- Components are fully typed with TypeScript.
+- Tailwind classes can be composed for custom styling.
+- To add new components: `npx shadcn@latest add <component-name>`
+
+## Constants
+
+Store all constants in `src/constants/`:
+
+- `auth.constants.ts` — OTP, cooldown, lengths
+- `api.constants.ts` — API delays, error messages
+- `validation.constants.ts` — Regex patterns, validation messages
+- `app.constants.ts` — Routes, app config
+- `index.ts` — Barrel export
+
+Import constants from `@/constants` in components and services. Never hardcode magic strings or numbers.
+
 ## Claude Instructions
 
 Always:
@@ -305,3 +338,5 @@ Always:
 - Optimize for slow networks.
 - Consider offline synchronization before implementation.
 - Ask before making architectural assumptions.
+- Store all constants in `src/constants/` — never hardcode values.
+- Use shadcn/ui for all UI components.
