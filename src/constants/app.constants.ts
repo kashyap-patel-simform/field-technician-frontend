@@ -2,6 +2,9 @@ export const ROUTES = {
   LOGIN: '/login',
   VERIFY_OTP: '/verify-otp',
   DASHBOARD: '/dashboard',
+  JOBS: '/jobs',
+  NOTIFICATIONS: '/notifications',
+  PROFILE: '/profile',
   HOME: '/',
 } as const
 
