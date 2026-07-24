@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
-import { QUERY_KEYS } from '@/constants'
-import { fetchSignature } from '@/features/jobs/api/signature.api'
+import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants";
+import { fetchJob } from "@/features/jobs/api/jobs.api";
 
 export function useSignature(jobId: string) {
   return useQuery({
-    queryKey: QUERY_KEYS.SIGNATURE(jobId),
-    queryFn: () => fetchSignature(jobId),
+    queryKey: QUERY_KEYS.JOB(jobId),
+    queryFn: () => fetchJob(jobId),
     enabled: !!jobId,
-  })
+    select: (job) => job.signature,
+  });
 }

@@ -1,43 +1,46 @@
-import { AUTH_CONSTANTS, API_CONSTANTS, ERROR_MESSAGES } from "@/constants";
+import { API_ENDPOINTS } from "@/constants";
+import { httpClient, unwrap } from "@/lib/http/http-client";
+import { clearAccessToken, setAccessToken } from "@/lib/http/token-store";
 import type { Technician } from "@/features/auth/types/auth.types";
+import type { ApiSuccessResponse } from "@/types/api.types";
 
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+interface AuthSessionPayload {
+  technician: Technician;
+  accessToken: string;
 }
 
-export async function sendOtp(
-  mobileNumber: string,
-): Promise<{ success: true }> {
-  if (!mobileNumber) {
-    throw new Error("Mobile number is required.");
-  }
-  await wait(API_CONSTANTS.SIMULATED_DELAY_MS);
-  return { success: true };
+export async function sendOtp(mobileNumber: string): Promise<void> {
+  await httpClient.post<ApiSuccessResponse<{ sent: boolean }>>(
+    API_ENDPOINTS.AUTH.SEND_OTP,
+    { mobileNumber },
+  );
 }
 
 export async function verifyOtp(
   mobileNumber: string,
   otp: string,
-): Promise<{ technician: Technician; accessToken: string }> {
-  await wait(API_CONSTANTS.SIMULATED_DELAY_MS);
-
-  if (otp !== AUTH_CONSTANTS.DEMO_OTP) {
-    throw new Error(ERROR_MESSAGES.INVALID_OTP);
-  }
-
-  return {
-    technician: { id: mobileNumber, mobileNumber },
-    accessToken: `demo-token-${mobileNumber}`,
-  };
+): Promise<AuthSessionPayload> {
+  const response = await httpClient.post<
+    ApiSuccessResponse<AuthSessionPayload>
+  >(API_ENDPOINTS.AUTH.VERIFY_OTP, { mobileNumber, otp });
+  const session = unwrap(response);
+  setAccessToken(session.accessToken);
+  return session;
 }
 
-export async function refreshSession(
-  mobileNumber: string,
-): Promise<{ technician: Technician; accessToken: string }> {
-  await wait(API_CONSTANTS.SIMULATED_DELAY_MS);
+export async function refreshSession(): Promise<AuthSessionPayload> {
+  const response = await httpClient.post<
+    ApiSuccessResponse<AuthSessionPayload>
+  >(API_ENDPOINTS.AUTH.REFRESH);
+  const session = unwrap(response);
+  setAccessToken(session.accessToken);
+  return session;
+}
 
-  return {
-    technician: { id: mobileNumber, mobileNumber },
-    accessToken: `demo-token-${mobileNumber}`,
-  };
+export async function logout(): Promise<void> {
+  try {
+    await httpClient.post(API_ENDPOINTS.AUTH.LOGOUT);
+  } finally {
+    clearAccessToken();
+  }
 }

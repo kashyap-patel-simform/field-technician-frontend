@@ -1,11 +1,12 @@
-import { useQuery } from '@tanstack/react-query'
-import { QUERY_KEYS } from '@/constants'
-import { fetchChecklist } from '@/features/jobs/api/checklist.api'
+import { useQuery } from "@tanstack/react-query";
+import { QUERY_KEYS } from "@/constants";
+import { fetchJob } from "@/features/jobs/api/jobs.api";
 
 export function useChecklist(jobId: string) {
   return useQuery({
-    queryKey: QUERY_KEYS.CHECKLIST(jobId),
-    queryFn: () => fetchChecklist(jobId),
+    queryKey: QUERY_KEYS.JOB(jobId),
+    queryFn: () => fetchJob(jobId),
     enabled: !!jobId,
-  })
+    select: (job) => job.checklistItems,
+  });
 }

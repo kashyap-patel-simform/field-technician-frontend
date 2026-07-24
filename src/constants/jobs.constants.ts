@@ -90,8 +90,7 @@ export const JOB_STATUS_CONFIG: Record<
   },
   [JobStatus.ARRIVED]: {
     label: "Arrived",
-    className:
-      "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400",
+    className: "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400",
   },
 };
 
@@ -106,11 +105,3 @@ export const JOB_STATUS_ACTION_CONFIG: Partial<
 };
 
 export const JOBS_SEARCH_DEBOUNCE_MS = 250;
-
-export const MOCK_CHECKLIST_TEMPLATE = [
-  "Verify customer identity",
-  "Inspect equipment",
-  "Complete repair",
-  "Test functionality",
-  "Clean work area",
-];
