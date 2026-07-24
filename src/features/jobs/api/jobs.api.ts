@@ -1,4 +1,4 @@
-import { API_CONSTANTS } from '@/constants'
+import { API_CONSTANTS, ERROR_MESSAGES } from '@/constants'
 import { JobPriority, JobStatus, type Job, type JobsSummary } from '@/features/jobs/types/job.types'
 
 function wait(ms: number) {
@@ -15,7 +15,10 @@ function buildMockJobs(): Job[] {
       id: 'job-1',
       jobNumber: 'JOB-1042',
       customerName: 'Anita Sharma',
+      customerPhone: '9876543210',
       address: '221B Residency Road, Bengaluru',
+      lat: 12.9716,
+      lng: 77.5946,
       scheduledAt: hoursFromNow(1),
       priority: JobPriority.URGENT,
       status: JobStatus.ASSIGNED,
@@ -26,7 +29,10 @@ function buildMockJobs(): Job[] {
       id: 'job-2',
       jobNumber: 'JOB-1043',
       customerName: 'Rohit Verma',
+      customerPhone: '9876543211',
       address: '14 MG Road, Bengaluru',
+      lat: 12.9758,
+      lng: 77.6045,
       scheduledAt: hoursFromNow(3),
       priority: JobPriority.HIGH,
       status: JobStatus.ASSIGNED,
@@ -101,6 +107,8 @@ function buildMockJobs(): Job[] {
   ]
 }
 
+const mockJobsStore: Job[] = buildMockJobs()
+
 export async function fetchJobsSummary(): Promise<JobsSummary> {
   await wait(API_CONSTANTS.SIMULATED_DELAY_MS)
 
@@ -114,5 +122,43 @@ export async function fetchJobsSummary(): Promise<JobsSummary> {
 
 export async function fetchJobs(): Promise<Job[]> {
   await wait(API_CONSTANTS.SIMULATED_DELAY_MS)
-  return buildMockJobs()
+  return mockJobsStore
 }
+
+export async function fetchJob(id: string): Promise<Job> {
+  await wait(API_CONSTANTS.SIMULATED_DELAY_MS)
+  const job = mockJobsStore.find((existing) => existing.id === id)
+  if (!job) {
+    throw new Error(ERROR_MESSAGES.JOB_NOT_FOUND)
+  }
+  return job
+}
+
+async function transitionJobStatus(
+  id: string,
+  status: JobStatus,
+  timestampField: keyof Job,
+): Promise<Job> {
+  await wait(API_CONSTANTS.SIMULATED_DELAY_MS)
+  const job = mockJobsStore.find((existing) => existing.id === id)
+  if (!job) {
+    throw new Error(ERROR_MESSAGES.JOB_NOT_FOUND)
+  }
+  Object.assign(job, { status, [timestampField]: Date.now(), isPendingSync: false })
+  return { ...job }
+}
+
+export const acceptJob = (id: string) =>
+  transitionJobStatus(id, JobStatus.ACCEPTED, 'acceptedAt')
+
+export const startNavigation = (id: string) =>
+  transitionJobStatus(id, JobStatus.EN_ROUTE, 'enRouteAt')
+
+export const markArrived = (id: string) =>
+  transitionJobStatus(id, JobStatus.ARRIVED, 'arrivedAt')
+
+export const startWork = (id: string) =>
+  transitionJobStatus(id, JobStatus.IN_PROGRESS, 'startedAt')
+
+export const completeJob = (id: string) =>
+  transitionJobStatus(id, JobStatus.COMPLETED, 'completedAt')

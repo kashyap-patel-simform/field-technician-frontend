@@ -9,6 +9,9 @@ export type JobPriority = (typeof JobPriority)[keyof typeof JobPriority]
 
 export const JobStatus = {
   ASSIGNED: 'ASSIGNED',
+  ACCEPTED: 'ACCEPTED',
+  EN_ROUTE: 'EN_ROUTE',
+  ARRIVED: 'ARRIVED',
   IN_PROGRESS: 'IN_PROGRESS',
   COMPLETED: 'COMPLETED',
   ON_HOLD: 'ON_HOLD',
@@ -25,6 +28,36 @@ export const JobFilter = {
 
 export type JobFilter = (typeof JobFilter)[keyof typeof JobFilter]
 
+export interface ChecklistItem {
+  id: string
+  jobId: string
+  label: string
+  isCompleted: boolean
+  completedAt?: number
+}
+
+export interface JobNote {
+  id: string
+  jobId: string
+  text: string
+  createdAt: number
+  isPendingSync: boolean
+}
+
+export interface JobPhoto {
+  id: string
+  jobId: string
+  previewUrl: string
+  capturedAt: number
+  isPendingSync: boolean
+}
+
+export interface JobSignature {
+  jobId: string
+  dataUrl: string
+  capturedAt: number
+}
+
 export interface JobsSummary {
   totalAssigned: number
   dueToday: number
@@ -36,10 +69,18 @@ export interface Job {
   id: string
   jobNumber: string
   customerName: string
+  customerPhone?: string
   address: string
+  lat?: number
+  lng?: number
   scheduledAt: number
   priority: JobPriority
   status: JobStatus
   distanceKm?: number
   isPendingSync: boolean
+  acceptedAt?: number
+  enRouteAt?: number
+  arrivedAt?: number
+  startedAt?: number
+  completedAt?: number
 }

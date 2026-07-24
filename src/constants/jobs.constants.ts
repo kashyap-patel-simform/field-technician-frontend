@@ -1,4 +1,12 @@
 import {
+  CheckCircle,
+  CheckCircle2,
+  MapPin,
+  Navigation,
+  Play,
+  type LucideIcon,
+} from "lucide-react";
+import {
   JobFilter,
   JobPriority,
   JobStatus,
@@ -71,6 +79,38 @@ export const JOB_STATUS_CONFIG: Record<
     className:
       "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
   },
+  [JobStatus.ACCEPTED]: {
+    label: "Accepted",
+    className: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
+  },
+  [JobStatus.EN_ROUTE]: {
+    label: "En Route",
+    className:
+      "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400",
+  },
+  [JobStatus.ARRIVED]: {
+    label: "Arrived",
+    className:
+      "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400",
+  },
+};
+
+export const JOB_STATUS_ACTION_CONFIG: Partial<
+  Record<JobStatus, { label: string; icon: LucideIcon }>
+> = {
+  [JobStatus.ASSIGNED]: { label: "Accept Job", icon: CheckCircle },
+  [JobStatus.ACCEPTED]: { label: "Navigate to Customer", icon: Navigation },
+  [JobStatus.EN_ROUTE]: { label: "I've Arrived", icon: MapPin },
+  [JobStatus.ARRIVED]: { label: "Start Work", icon: Play },
+  [JobStatus.IN_PROGRESS]: { label: "Complete Job", icon: CheckCircle2 },
 };
 
 export const JOBS_SEARCH_DEBOUNCE_MS = 250;
+
+export const MOCK_CHECKLIST_TEMPLATE = [
+  "Verify customer identity",
+  "Inspect equipment",
+  "Complete repair",
+  "Test functionality",
+  "Clean work area",
+];

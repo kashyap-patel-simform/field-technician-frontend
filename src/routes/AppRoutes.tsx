@@ -18,6 +18,9 @@ const DashboardPage = lazy(() =>
 const JobsPage = lazy(() =>
   import('@/pages/JobsPage').then((m) => ({ default: m.JobsPage })),
 )
+const JobDetailsPage = lazy(() =>
+  import('@/pages/JobDetailsPage').then((m) => ({ default: m.JobDetailsPage })),
+)
 const NotificationsPage = lazy(() =>
   import('@/pages/NotificationsPage').then((m) => ({ default: m.NotificationsPage })),
 )
@@ -42,6 +45,7 @@ export function AppRoutes() {
         >
           <Route path={ROUTES.DASHBOARD} element={<DashboardPage />} />
           <Route path={ROUTES.JOBS} element={<JobsPage />} />
+          <Route path={ROUTES.JOB_DETAILS} element={<JobDetailsPage />} />
           <Route path={ROUTES.NOTIFICATIONS} element={<NotificationsPage />} />
           <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
         </Route>
