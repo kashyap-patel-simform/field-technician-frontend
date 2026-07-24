@@ -1,29 +1,40 @@
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { Navigate, useNavigate } from 'react-router-dom'
-import { Wrench } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { ROUTES, VALIDATION_PATTERNS, VALIDATION_MESSAGES, ERROR_MESSAGES } from '@/constants'
-import { sendOtp } from '@/features/auth/api/auth.api'
-import { useAuth } from '@/features/auth/hooks/useAuth'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Navigate, useNavigate } from "react-router-dom";
+import { Download, Wrench } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  ROUTES,
+  VALIDATION_PATTERNS,
+  VALIDATION_MESSAGES,
+  ERROR_MESSAGES,
+  PWA_MESSAGES,
+} from "@/constants";
+import { sendOtp } from "@/features/auth/api/auth.api";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { usePwaInstall } from "@/hooks/usePwaInstall";
 
 const loginSchema = z.object({
   mobileNumber: z
     .string()
     .trim()
-    .regex(VALIDATION_PATTERNS.MOBILE_NUMBER, VALIDATION_MESSAGES.INVALID_MOBILE),
-})
+    .regex(
+      VALIDATION_PATTERNS.MOBILE_NUMBER,
+      VALIDATION_MESSAGES.INVALID_MOBILE,
+    ),
+});
 
-type LoginFormValues = z.infer<typeof loginSchema>
+type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginPage() {
-  const navigate = useNavigate()
-  const { isAuthenticated, isInitializing } = useAuth()
-  const [serverError, setServerError] = useState<string | null>(null)
+  const navigate = useNavigate();
+  const { isAuthenticated, isInitializing } = useAuth();
+  const [serverError, setServerError] = useState<string | null>(null);
+  const { canInstall, promptInstall } = usePwaInstall();
 
   const {
     register,
@@ -31,24 +42,26 @@ export function LoginPage() {
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { mobileNumber: '' },
-  })
+    defaultValues: { mobileNumber: "" },
+  });
 
   if (isInitializing) {
-    return null
+    return null;
   }
 
   if (isAuthenticated) {
-    return <Navigate to={ROUTES.DASHBOARD} replace />
+    return <Navigate to={ROUTES.DASHBOARD} replace />;
   }
 
   async function onSubmit(values: LoginFormValues) {
-    setServerError(null)
+    setServerError(null);
     try {
-      await sendOtp(values.mobileNumber)
-      navigate(ROUTES.VERIFY_OTP, { state: { mobileNumber: values.mobileNumber } })
+      await sendOtp(values.mobileNumber);
+      navigate(ROUTES.VERIFY_OTP, {
+        state: { mobileNumber: values.mobileNumber },
+      });
     } catch {
-      setServerError(ERROR_MESSAGES.SEND_OTP_FAILED)
+      setServerError(ERROR_MESSAGES.SEND_OTP_FAILED);
     }
   }
 
@@ -87,7 +100,7 @@ export function LoginPage() {
               autoFocus
               className="h-12 flex-1 text-base"
               aria-invalid={!!errors.mobileNumber}
-              {...register('mobileNumber')}
+              {...register("mobileNumber")}
             />
           </div>
           {errors.mobileNumber && (
@@ -99,6 +112,19 @@ export function LoginPage() {
             <p className="text-sm text-destructive">{serverError}</p>
           )}
         </form>
+
+        {canInstall && (
+          <Button
+            type="button"
+            variant="outline"
+            size="lg"
+            className="h-12 w-full text-base"
+            onClick={promptInstall}
+          >
+            <Download className="size-4" />
+            {PWA_MESSAGES.DOWNLOAD_APP}
+          </Button>
+        )}
       </div>
 
       <Button
@@ -108,8 +134,8 @@ export function LoginPage() {
         size="lg"
         className="h-12 w-full text-base"
       >
-        {isSubmitting ? 'Sending OTP…' : 'Send OTP'}
+        {isSubmitting ? "Sending OTP…" : "Send OTP"}
       </Button>
     </div>
-  )
+  );
 }

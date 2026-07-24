@@ -3,6 +3,7 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "@/features/auth/hooks/useAuth";
 import { AppRoutes } from "@/routes/AppRoutes";
 import { ApiRequestError } from "@/lib/http/http-client";
+import { PwaUpdateBanner } from "@/components/PwaUpdateBanner";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,6 +27,7 @@ function App() {
       <BrowserRouter>
         <AuthProvider>
           <AppRoutes />
+          <PwaUpdateBanner />
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
