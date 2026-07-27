@@ -13,6 +13,12 @@ import {
 } from "@/features/auth/api/auth.api";
 import type { AuthState, Technician } from "@/features/auth/types/auth.types";
 import {
+  clearCachedTechnician,
+  getCachedTechnician,
+  setCachedTechnician,
+} from "@/features/auth/lib/technician-cache";
+import { ApiRequestError } from "@/lib/http/http-client";
+import {
   clearAccessToken,
   setSessionExpiredHandler,
 } from "@/lib/http/token-store";
@@ -34,6 +40,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const handleSessionExpired = useCallback(() => {
     setTechnician(null);
     setAccessTokenState(null);
+    void clearCachedTechnician();
   }, []);
 
   useEffect(() => {
@@ -42,28 +49,51 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [handleSessionExpired]);
 
   useEffect(() => {
+    let cancelled = false;
+
+    void getCachedTechnician().then((cached) => {
+      if (!cancelled && cached) {
+        setTechnician(cached);
+      }
+    });
+
     refreshSession()
       .then((session) => {
+        if (cancelled) return;
         setTechnician(session.technician);
         setAccessTokenState(session.accessToken);
+        void setCachedTechnician(session.technician);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (cancelled) return;
         clearAccessToken();
+        // A network/offline failure doesn't mean the session is invalid —
+        // only an explicit rejection from the server (e.g. 401) does.
+        const isOffline =
+          error instanceof ApiRequestError && error.status === 0;
+        if (!isOffline) {
+          handleSessionExpired();
+        }
       })
       .finally(() => {
-        setIsInitializing(false);
+        if (!cancelled) setIsInitializing(false);
       });
-  }, []);
+
+    return () => {
+      cancelled = true;
+    };
+  }, [handleSessionExpired]);
 
   const value = useMemo<AuthContextValue>(
     () => ({
       technician,
       accessToken,
-      isAuthenticated: accessToken !== null,
+      isAuthenticated: technician !== null,
       isInitializing,
       login: (technician, accessToken) => {
         setTechnician(technician);
         setAccessTokenState(accessToken);
+        void setCachedTechnician(technician);
       },
       logout: () => {
         handleSessionExpired();
