@@ -1,38 +1,53 @@
-import { isSameDay } from '@/utils/time.utils'
-import { JobFilter, JobPriority, JobStatus, type Job } from '@/features/jobs/types/job.types'
+import { isSameDay } from "@/utils/time.utils";
+import {
+  JobFilter,
+  JobPriority,
+  JobStatus,
+  type Job,
+} from "@/features/jobs/types/job.types";
 
 function matchesFilter(job: Job, filter: JobFilter): boolean {
-  const now = new Date()
-  const scheduledDate = new Date(job.scheduledAt)
+  const now = new Date();
+  const scheduledDate = new Date(job.scheduledAt);
 
   switch (filter) {
     case JobFilter.TODAY:
-      return isSameDay(scheduledDate, now) && job.status !== JobStatus.COMPLETED
+      return (
+        isSameDay(scheduledDate, now) && job.status !== JobStatus.COMPLETED
+      );
     case JobFilter.UPCOMING:
-      return job.scheduledAt > Date.now() && job.status !== JobStatus.COMPLETED
+      return job.scheduledAt > Date.now() && job.status !== JobStatus.COMPLETED;
     case JobFilter.COMPLETED:
-      return job.status === JobStatus.COMPLETED
+      return job.status === JobStatus.COMPLETED;
     case JobFilter.HIGH_PRIORITY:
-      return job.priority === JobPriority.HIGH || job.priority === JobPriority.URGENT
+      return (
+        job.priority === JobPriority.HIGH || job.priority === JobPriority.URGENT
+      );
     default:
-      return true
+      return true;
   }
 }
 
 function matchesSearch(job: Job, query: string): boolean {
-  if (!query.trim()) return true
-  const normalized = query.trim().toLowerCase()
+  if (!query.trim()) return true;
+  const normalized = query.trim().toLowerCase();
 
   return (
     job.jobNumber.toLowerCase().includes(normalized) ||
     job.customerName.toLowerCase().includes(normalized) ||
     job.address.toLowerCase().includes(normalized)
-  )
+  );
 }
 
-export function filterJobs(jobs: Job[], filter: JobFilter | null, search: string): Job[] {
+export function filterJobs(
+  jobs: Job[],
+  filter: JobFilter | null,
+  search: string,
+): Job[] {
   return jobs
-    .filter((job) => (filter ? matchesFilter(job, filter) : true))
+    .filter((job) =>
+      filter ? matchesFilter(job, filter) : job.status !== JobStatus.COMPLETED,
+    )
     .filter((job) => matchesSearch(job, search))
-    .sort((a, b) => a.scheduledAt - b.scheduledAt)
+    .sort((a, b) => a.scheduledAt - b.scheduledAt);
 }

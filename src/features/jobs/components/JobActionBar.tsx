@@ -1,70 +1,67 @@
-import { Button } from '@/components/ui/button'
-import { JOB_STATUS_ACTION_CONFIG } from '@/constants'
+import { Button } from "@/components/ui/button";
+import { JOB_STATUS_ACTION_CONFIG } from "@/constants";
+import { useCanCompleteJob } from "@/features/jobs/hooks/useCanCompleteJob";
+import { useJobStatusMutation } from "@/features/jobs/hooks/useJobStatusMutation";
 import {
-  acceptJob,
-  completeJob,
-  markArrived,
-  startNavigation,
-  startWork,
-} from '@/features/jobs/api/jobs.api'
-import { useCanCompleteJob } from '@/features/jobs/hooks/useCanCompleteJob'
-import { useJobStatusMutation } from '@/features/jobs/hooks/useJobStatusMutation'
-import { JobStatus, type Job } from '@/features/jobs/types/job.types'
-import { buildMapsUrl } from '@/features/jobs/utils/maps.utils'
+  JobAction,
+  JobStatus,
+  type Job,
+} from "@/features/jobs/types/job.types";
+import { buildMapsUrl } from "@/features/jobs/utils/maps.utils";
 
 export function JobActionBar({ job }: { job: Job }) {
-  const acceptMutation = useJobStatusMutation(job.id, acceptJob)
-  const navigateMutation = useJobStatusMutation(job.id, startNavigation)
-  const arrivedMutation = useJobStatusMutation(job.id, markArrived)
-  const startWorkMutation = useJobStatusMutation(job.id, startWork)
-  const completeMutation = useJobStatusMutation(job.id, completeJob)
-  const { hasSignature, incompleteChecklistCount } = useCanCompleteJob(job.id)
+  const acceptMutation = useJobStatusMutation(job.id, JobAction.ACCEPT);
+  const navigateMutation = useJobStatusMutation(job.id, JobAction.NAVIGATE);
+  const arrivedMutation = useJobStatusMutation(job.id, JobAction.ARRIVE);
+  const startWorkMutation = useJobStatusMutation(job.id, JobAction.START);
+  const completeMutation = useJobStatusMutation(job.id, JobAction.COMPLETE);
+  const { hasSignature, incompleteChecklistCount } = useCanCompleteJob(job.id);
 
-  const actionConfig = JOB_STATUS_ACTION_CONFIG[job.status]
+  const actionConfig = JOB_STATUS_ACTION_CONFIG[job.status];
   if (!actionConfig) {
-    return null
+    return null;
   }
 
-  const { label, icon: Icon } = actionConfig
-  const isComplete = job.status === JobStatus.IN_PROGRESS
+  const { label, icon: Icon } = actionConfig;
+  const isComplete = job.status === JobStatus.IN_PROGRESS;
 
   function handleClick() {
     switch (job.status) {
       case JobStatus.ASSIGNED:
-        acceptMutation.mutate()
-        return
+        acceptMutation.mutate();
+        return;
       case JobStatus.ACCEPTED:
-        window.open(buildMapsUrl(job), '_blank', 'noopener,noreferrer')
-        navigateMutation.mutate()
-        return
+        window.open(buildMapsUrl(job), "_blank", "noopener,noreferrer");
+        navigateMutation.mutate();
+        return;
       case JobStatus.EN_ROUTE:
-        arrivedMutation.mutate()
-        return
+        arrivedMutation.mutate();
+        return;
       case JobStatus.ARRIVED:
-        startWorkMutation.mutate()
-        return
+        startWorkMutation.mutate();
+        return;
       case JobStatus.IN_PROGRESS: {
         if (incompleteChecklistCount > 0) {
           const proceed = window.confirm(
             `${incompleteChecklistCount} checklist item(s) incomplete. Complete anyway?`,
-          )
-          if (!proceed) return
+          );
+          if (!proceed) return;
         }
-        completeMutation.mutate()
-        return
+        completeMutation.mutate();
+        return;
       }
       default:
-        return
+        return;
     }
   }
 
-  const isDisabled = isComplete && !hasSignature
+  const isDisabled = isComplete && !hasSignature;
   const isPending =
     acceptMutation.isPending ||
     navigateMutation.isPending ||
     arrivedMutation.isPending ||
     startWorkMutation.isPending ||
-    completeMutation.isPending
+    completeMutation.isPending;
 
   return (
     <div className="fixed inset-x-0 bottom-[calc(4rem+env(safe-area-inset-bottom))] z-40 border-t bg-background px-6 py-4">
@@ -84,5 +81,5 @@ export function JobActionBar({ job }: { job: Job }) {
         {label}
       </Button>
     </div>
-  )
+  );
 }

@@ -1,38 +1,36 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/constants";
-import type { Job, JobDetail } from "@/features/jobs/types/job.types";
+import { QUERY_KEYS, API_ENDPOINTS } from "@/constants";
+import { useQueuedMutation } from "@/features/sync/hooks/useQueuedMutation";
+import { OutboxEntityType } from "@/features/sync/types/outbox.types";
+import { db } from "@/lib/db/db";
+import type {
+  Job,
+  JobAction,
+  JobDetail,
+} from "@/features/jobs/types/job.types";
 
-export function useJobStatusMutation(
-  jobId: string,
-  mutationFn: (id: string) => Promise<Job>,
-) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: () => mutationFn(jobId),
-    onMutate: async () => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.JOB(jobId) });
-      const previous = queryClient.getQueryData<JobDetail>(
-        QUERY_KEYS.JOB(jobId),
+export function useJobStatusMutation(jobId: string, action: JobAction) {
+  return useQueuedMutation<void, Job>({
+    entityType: OutboxEntityType.JOB_ACTION,
+    jobId,
+    method: "POST",
+    endpoint: () => API_ENDPOINTS.JOBS.ACTION(jobId, action),
+    buildEntity: async () => {
+      const existing = await db.jobs.get(jobId);
+      if (!existing) {
+        throw new Error("Job not found.");
+      }
+      return { ...existing, isPendingSync: true };
+    },
+    writeEntity: (job) => db.jobs.put(job),
+    patchCache: (queryClient, job) => {
+      queryClient.setQueryData<Job[]>(QUERY_KEYS.JOBS, (jobs) =>
+        jobs?.map((existing) => (existing.id === jobId ? job : existing)),
       );
-      if (previous) {
-        queryClient.setQueryData<JobDetail>(QUERY_KEYS.JOB(jobId), {
-          ...previous,
-          isPendingSync: true,
-        });
-      }
-      return { previous };
-    },
-    onError: (_error, _variables, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(QUERY_KEYS.JOB(jobId), context.previous);
-      }
-    },
-    onSuccess: (updatedJob) => {
       queryClient.setQueryData<JobDetail>(QUERY_KEYS.JOB(jobId), (current) =>
-        current ? { ...current, ...updatedJob } : (updatedJob as JobDetail),
+        current ? { ...current, isPendingSync: true } : current,
       );
-      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.JOBS });
     },
+    buildPayload: () => ({ action }),
+    localEntityId: () => jobId,
   });
 }

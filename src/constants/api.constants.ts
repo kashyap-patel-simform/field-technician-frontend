@@ -1,8 +1,3 @@
-export const API_CONSTANTS = {
-  // Retained for the mocked sync-queue UI until the Dexie offline queue ships.
-  SIMULATED_DELAY_MS: 800,
-} as const;
-
 export const API_ENDPOINTS = {
   AUTH: {
     SEND_OTP: "/auth/otp/send",

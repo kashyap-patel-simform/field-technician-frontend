@@ -57,41 +57,14 @@ export const JOB_PRIORITY_CONFIG: Record<
   },
 };
 
-export const JOB_STATUS_CONFIG: Record<
-  JobStatus,
-  { label: string; className: string }
-> = {
-  [JobStatus.ASSIGNED]: {
-    label: "Assigned",
-    className: "bg-secondary text-secondary-foreground",
-  },
-  [JobStatus.IN_PROGRESS]: {
-    label: "In Progress",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  },
-  [JobStatus.COMPLETED]: {
-    label: "Completed",
-    className:
-      "bg-emerald-100 text-emerald-700 dark:bg-emerald-950 dark:text-emerald-400",
-  },
-  [JobStatus.ON_HOLD]: {
-    label: "On Hold",
-    className:
-      "bg-amber-100 text-amber-700 dark:bg-amber-950 dark:text-amber-400",
-  },
-  [JobStatus.ACCEPTED]: {
-    label: "Accepted",
-    className: "bg-blue-100 text-blue-700 dark:bg-blue-950 dark:text-blue-400",
-  },
-  [JobStatus.EN_ROUTE]: {
-    label: "En Route",
-    className:
-      "bg-violet-100 text-violet-700 dark:bg-violet-950 dark:text-violet-400",
-  },
-  [JobStatus.ARRIVED]: {
-    label: "Arrived",
-    className: "bg-teal-100 text-teal-700 dark:bg-teal-950 dark:text-teal-400",
-  },
+export const JOB_STATUS_CONFIG: Record<JobStatus, { label: string }> = {
+  [JobStatus.ASSIGNED]: { label: "Assigned" },
+  [JobStatus.IN_PROGRESS]: { label: "In Progress" },
+  [JobStatus.COMPLETED]: { label: "Completed" },
+  [JobStatus.ON_HOLD]: { label: "On Hold" },
+  [JobStatus.ACCEPTED]: { label: "Accepted" },
+  [JobStatus.EN_ROUTE]: { label: "En Route" },
+  [JobStatus.ARRIVED]: { label: "Arrived" },
 };
 
 export const JOB_STATUS_ACTION_CONFIG: Partial<

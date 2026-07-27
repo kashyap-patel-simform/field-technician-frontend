@@ -1,21 +1,27 @@
-import { AlertTriangle, Briefcase, CalendarClock, CloudOff, RefreshCw } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Skeleton } from '@/components/ui/skeleton'
-import { useAuth } from '@/features/auth/hooks/useAuth'
-import { useJobsSummary } from '@/features/jobs/hooks/useJobsSummary'
-import { JobStatCard } from '@/features/jobs/components/JobStatCard'
-import { useSyncStatus } from '@/features/sync/hooks/useSyncStatus'
-import { ConnectivityBadge } from '@/features/sync/components/ConnectivityBadge'
-import { SyncStatusBadge } from '@/features/sync/components/SyncStatusBadge'
-import { SyncStatus } from '@/features/sync/types/sync.types'
-import { formatTimeAgo } from '@/utils/time.utils'
+import {
+  AlertTriangle,
+  Briefcase,
+  CalendarClock,
+  CloudOff,
+  RefreshCw,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useJobsSummary } from "@/features/jobs/hooks/useJobsSummary";
+import { JobStatCard } from "@/features/jobs/components/JobStatCard";
+import { useSyncStatus } from "@/features/sync/hooks/useSyncStatus";
+import { ConnectivityBadge } from "@/features/sync/components/ConnectivityBadge";
+import { FailedSyncItems } from "@/features/sync/components/FailedSyncItems";
+import { SyncStatusBadge } from "@/features/sync/components/SyncStatusBadge";
+import { SyncStatus } from "@/features/sync/types/sync.types";
+import { formatTimeAgo } from "@/utils/time.utils";
 
 export function DashboardPage() {
-  const { technician } = useAuth()
-  const { data: jobsSummary, isPending } = useJobsSummary()
-  const { status, pendingCount, lastSyncedAt, isOnline, sync } = useSyncStatus(
-    jobsSummary?.pendingSync ?? 0,
-  )
+  const { technician } = useAuth();
+  const { data: jobsSummary, isPending } = useJobsSummary();
+  const { status, pendingCount, lastSyncedAt, isOnline, sync, failedItems } =
+    useSyncStatus();
 
   return (
     <div className="flex flex-col bg-background">
@@ -33,6 +39,8 @@ export function DashboardPage() {
           <ConnectivityBadge isOnline={isOnline} />
           <SyncStatusBadge status={status} />
         </div>
+
+        <FailedSyncItems items={failedItems} />
 
         <div>
           <h2 className="mb-3 text-sm font-medium text-muted-foreground">
@@ -67,7 +75,7 @@ export function DashboardPage() {
                 icon={CloudOff}
                 label="Pending Sync"
                 value={pendingCount}
-                tone={pendingCount > 0 ? 'warning' : 'default'}
+                tone={pendingCount > 0 ? "warning" : "default"}
               />
             </div>
           )}
@@ -83,17 +91,19 @@ export function DashboardPage() {
           <Button
             variant="outline"
             size="sm"
-            disabled={!isOnline || status === SyncStatus.SYNCING || pendingCount === 0}
+            disabled={
+              !isOnline || status === SyncStatus.SYNCING || pendingCount === 0
+            }
             onClick={sync}
             className="gap-1.5"
           >
             <RefreshCw
-              className={`size-4 ${status === SyncStatus.SYNCING ? 'animate-spin' : ''}`}
+              className={`size-4 ${status === SyncStatus.SYNCING ? "animate-spin" : ""}`}
             />
             Sync Now
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

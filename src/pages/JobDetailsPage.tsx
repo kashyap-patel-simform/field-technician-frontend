@@ -16,7 +16,10 @@ const ARRIVED_OR_LATER: string[] = [
   JobStatus.COMPLETED,
 ];
 
-const IN_PROGRESS_OR_LATER: string[] = [JobStatus.IN_PROGRESS, JobStatus.COMPLETED];
+const IN_PROGRESS_OR_LATER: string[] = [
+  JobStatus.IN_PROGRESS,
+  JobStatus.COMPLETED,
+];
 
 export function JobDetailsPage() {
   const { jobId } = useParams<{ jobId: string }>();
@@ -48,11 +51,20 @@ export function JobDetailsPage() {
 
       <div className="flex flex-1 flex-col gap-4 px-6 pt-4 pb-28">
         {ARRIVED_OR_LATER.includes(job.status) && (
-          <JobChecklist jobId={job.id} disabled={job.status === JobStatus.COMPLETED} />
+          <JobChecklist
+            jobId={job.id}
+            disabled={job.status === JobStatus.COMPLETED}
+          />
         )}
-        {IN_PROGRESS_OR_LATER.includes(job.status) && <JobNotes jobId={job.id} />}
-        {IN_PROGRESS_OR_LATER.includes(job.status) && <JobPhotos jobId={job.id} />}
-        {IN_PROGRESS_OR_LATER.includes(job.status) && <JobSignaturePad jobId={job.id} />}
+        {IN_PROGRESS_OR_LATER.includes(job.status) && (
+          <JobNotes jobId={job.id} />
+        )}
+        {IN_PROGRESS_OR_LATER.includes(job.status) && (
+          <JobPhotos jobId={job.id} />
+        )}
+        {IN_PROGRESS_OR_LATER.includes(job.status) && (
+          <JobSignaturePad jobId={job.id} />
+        )}
       </div>
 
       <JobActionBar job={job} />

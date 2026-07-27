@@ -1,46 +1,41 @@
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/constants";
-import { toggleChecklistItem } from "@/features/jobs/api/checklist.api";
-import type { JobDetail } from "@/features/jobs/types/job.types";
+import { QUERY_KEYS, API_ENDPOINTS } from "@/constants";
+import { useQueuedMutation } from "@/features/sync/hooks/useQueuedMutation";
+import { OutboxEntityType } from "@/features/sync/types/outbox.types";
+import { db } from "@/lib/db/db";
+import type { ChecklistItem, JobDetail } from "@/features/jobs/types/job.types";
 
 export function useToggleChecklistItem(jobId: string) {
-  const queryClient = useQueryClient();
-
-  return useMutation({
-    mutationFn: (itemId: string) => toggleChecklistItem(jobId, itemId),
-    onMutate: async (itemId: string) => {
-      await queryClient.cancelQueries({ queryKey: QUERY_KEYS.JOB(jobId) });
-      const previous = queryClient.getQueryData<JobDetail>(
-        QUERY_KEYS.JOB(jobId),
-      );
-      if (previous) {
-        queryClient.setQueryData<JobDetail>(QUERY_KEYS.JOB(jobId), {
-          ...previous,
-          checklistItems: previous.checklistItems.map((item) =>
-            item.id === itemId
-              ? { ...item, isCompleted: !item.isCompleted }
-              : item,
-          ),
-        });
+  return useQueuedMutation<string, ChecklistItem>({
+    entityType: OutboxEntityType.CHECKLIST_ITEM,
+    jobId,
+    method: "PATCH",
+    endpoint: (itemId) => API_ENDPOINTS.JOBS.CHECKLIST_ITEM(jobId, itemId),
+    buildEntity: async (itemId) => {
+      const existing = await db.checklistItems.get(itemId);
+      if (!existing) {
+        throw new Error("Checklist item not found.");
       }
-      return { previous };
+      const isCompleted = !existing.isCompleted;
+      return {
+        ...existing,
+        isCompleted,
+        completedAt: isCompleted ? Date.now() : undefined,
+      };
     },
-    onError: (_error, _itemId, context) => {
-      if (context?.previous) {
-        queryClient.setQueryData(QUERY_KEYS.JOB(jobId), context.previous);
-      }
-    },
-    onSuccess: (updatedItem) => {
+    writeEntity: (item) => db.checklistItems.put(item),
+    patchCache: (queryClient, item) => {
       queryClient.setQueryData<JobDetail>(QUERY_KEYS.JOB(jobId), (current) =>
         current
           ? {
               ...current,
-              checklistItems: current.checklistItems.map((item) =>
-                item.id === updatedItem.id ? updatedItem : item,
+              checklistItems: current.checklistItems.map((existing) =>
+                existing.id === item.id ? item : existing,
               ),
             }
           : current,
       );
     },
+    buildPayload: () => ({}),
+    localEntityId: (item) => item.id,
   });
 }

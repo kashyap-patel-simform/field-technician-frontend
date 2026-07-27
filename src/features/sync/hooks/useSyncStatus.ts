@@ -1,50 +1,54 @@
-import { useCallback, useEffect, useRef, useState } from 'react'
-import { API_CONSTANTS } from '@/constants'
-import { SyncStatus, type SyncState } from '@/features/sync/types/sync.types'
-import { useOnlineStatus } from '@/hooks/useOnlineStatus'
+import { useCallback, useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLiveQuery } from "dexie-react-hooks";
+import { db } from "@/lib/db/db";
+import { drainOutbox } from "@/features/sync/lib/syncEngine";
+import {
+  OutboxStatus,
+  type OutboxItem,
+} from "@/features/sync/types/outbox.types";
+import { SyncStatus } from "@/features/sync/types/sync.types";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 
-function wait(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms))
-}
+export function useSyncStatus() {
+  const isOnline = useOnlineStatus();
+  const queryClient = useQueryClient();
 
-export function useSyncStatus(initialPendingCount: number) {
-  const isOnline = useOnlineStatus()
-  const isSyncingRef = useRef(false)
+  const outboxItems = useLiveQuery(
+    () => db.outbox.toArray(),
+    [],
+    [] as OutboxItem[],
+  );
+  const lastSyncedAtRow = useLiveQuery(
+    () => db.meta.get("lastSyncedAt"),
+    [],
+    undefined,
+  );
 
-  const [state, setState] = useState<SyncState>({
-    status: SyncStatus.PENDING,
-    pendingCount: initialPendingCount,
-    lastSyncedAt: null,
-  })
+  const failedItems = outboxItems.filter(
+    (item) => item.status === OutboxStatus.FAILED,
+  );
+  const pendingCount = outboxItems.length - failedItems.length;
+  const isSyncing = outboxItems.some(
+    (item) => item.status === OutboxStatus.SYNCING,
+  );
+  const lastSyncedAt = (lastSyncedAtRow?.value as number | undefined) ?? null;
 
-  const sync = useCallback(async () => {
-    if (isSyncingRef.current || !isOnline || state.pendingCount === 0) {
-      return
-    }
+  const status: SyncStatus = isSyncing
+    ? SyncStatus.SYNCING
+    : failedItems.length > 0
+      ? SyncStatus.ERROR
+      : pendingCount > 0
+        ? SyncStatus.PENDING
+        : SyncStatus.SYNCED;
 
-    isSyncingRef.current = true
-    setState((prev) => ({ ...prev, status: SyncStatus.SYNCING }))
-
-    try {
-      await wait(API_CONSTANTS.SIMULATED_DELAY_MS)
-      setState({
-        status: SyncStatus.SYNCED,
-        pendingCount: 0,
-        lastSyncedAt: Date.now(),
-      })
-    } catch {
-      setState((prev) => ({ ...prev, status: SyncStatus.ERROR }))
-    } finally {
-      isSyncingRef.current = false
-    }
-  }, [isOnline, state.pendingCount])
+  const sync = useCallback(() => drainOutbox(queryClient), [queryClient]);
 
   useEffect(() => {
-    if (isOnline && state.pendingCount > 0) {
-      sync()
+    if (isOnline) {
+      void sync();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline])
+  }, [isOnline, sync]);
 
-  return { ...state, isOnline, sync }
+  return { status, pendingCount, lastSyncedAt, isOnline, sync, failedItems };
 }
