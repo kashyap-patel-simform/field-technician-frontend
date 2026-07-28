@@ -11,7 +11,6 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: "autoUpdate",
-      injectRegister: "auto",
       devOptions: {
         enabled: true,
         type: "module",
@@ -41,6 +40,7 @@ export default defineConfig({
         ],
       },
       workbox: {
+        globPatterns: ["**/*.{js,css,html,ico,png,svg}"],
         clientsClaim: true,
         skipWaiting: true,
         navigateFallbackDenylist: [/^\/api/],

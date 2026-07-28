@@ -1,12 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
-import { QUERY_KEYS } from "@/constants";
-import { fetchJob } from "@/features/jobs/api/jobs.api";
+import { useJobDetailQuery } from "@/features/jobs/hooks/useJob";
 
 export function useNotes(jobId: string) {
-  return useQuery({
-    queryKey: QUERY_KEYS.JOB(jobId),
-    queryFn: () => fetchJob(jobId),
-    enabled: !!jobId,
-    select: (job) => job.notes,
-  });
+  return useJobDetailQuery(jobId, (job) => job.notes);
 }

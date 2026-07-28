@@ -39,8 +39,9 @@ async function upsertPreservingPending<T extends { id: string; jobId: string }>(
   if (staleIds.length) {
     await table.bulkDelete(staleIds);
   }
-  if (serverRows.length) {
-    await table.bulkPut(serverRows);
+  const rowsToWrite = serverRows.filter((row) => !pendingIds.has(row.id));
+  if (rowsToWrite.length) {
+    await table.bulkPut(rowsToWrite);
   }
 }
 

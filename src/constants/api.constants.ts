@@ -24,6 +24,7 @@ export const ERROR_MESSAGES = {
   INVALID_OTP: "Invalid OTP. Please try again.",
   JOB_NOT_FOUND: "Job not found.",
   CHECKLIST_ITEM_NOT_FOUND: "Checklist item not found.",
+  CHECKLIST_UPDATE_FAILED: "Couldn't update that item. Tap to try again.",
   NETWORK_ERROR: "Network error. Check your connection and try again.",
   SESSION_EXPIRED: "Session expired. Please log in again.",
 } as const;
