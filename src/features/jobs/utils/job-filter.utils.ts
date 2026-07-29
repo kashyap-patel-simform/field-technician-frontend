@@ -28,6 +28,10 @@ function matchesFilter(job: Job, filter: JobFilter): boolean {
   }
 }
 
+function isVisibleInJobsList(job: Job): boolean {
+  return !(job.status === JobStatus.ASSIGNED && !job.acceptedAt);
+}
+
 function matchesSearch(job: Job, query: string): boolean {
   if (!query.trim()) return true;
   const normalized = query.trim().toLowerCase();
@@ -45,6 +49,7 @@ export function filterJobs(
   search: string,
 ): Job[] {
   return jobs
+    .filter(isVisibleInJobsList)
     .filter((job) =>
       filter ? matchesFilter(job, filter) : job.status !== JobStatus.COMPLETED,
     )

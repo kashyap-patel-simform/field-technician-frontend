@@ -7,6 +7,8 @@ import type {
   JobAction,
   JobDetail,
 } from "@/features/jobs/types/job.types";
+import { JobAction as JobActionValues } from "@/features/jobs/types/job.types";
+import type { Notification } from "@/features/notifications/types/notification.types";
 
 export function useJobStatusMutation(jobId: string, action: JobAction) {
   return useQueuedMutation<void, Job>({
@@ -29,6 +31,17 @@ export function useJobStatusMutation(jobId: string, action: JobAction) {
       queryClient.setQueryData<JobDetail>(QUERY_KEYS.JOB(jobId), (current) =>
         current ? { ...current, isPendingSync: true } : current,
       );
+
+      if (action === JobActionValues.ACCEPT) {
+        queryClient.setQueryData<Notification[]>(
+          QUERY_KEYS.NOTIFICATIONS,
+          (notifications) =>
+            notifications?.filter(
+              (notification) => notification.job.id !== jobId,
+            ),
+        );
+        void db.notifications.where("job.id").equals(jobId).delete();
+      }
     },
     buildPayload: () => ({ action }),
     localEntityId: () => jobId,

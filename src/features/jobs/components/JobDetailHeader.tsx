@@ -1,18 +1,19 @@
-import { ArrowLeft, Clock, MapPin } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
-import { JOB_PRIORITY_CONFIG } from '@/constants'
-import { JobPriorityBadge } from '@/features/jobs/components/JobPriorityBadge'
-import { JobStatusBadge } from '@/features/jobs/components/JobStatusBadge'
-import type { Job } from '@/features/jobs/types/job.types'
-import { cn } from '@/lib/utils'
-import { getInitials } from '@/utils/string.utils'
-import { formatScheduledTime } from '@/utils/time.utils'
+import { ArrowLeft, Clock, MapPin, Navigation } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { JOB_PRIORITY_CONFIG } from "@/constants";
+import { JobPriorityBadge } from "@/features/jobs/components/JobPriorityBadge";
+import { JobStatusBadge } from "@/features/jobs/components/JobStatusBadge";
+import { JobStatus, type Job } from "@/features/jobs/types/job.types";
+import { buildMapsUrl } from "@/features/jobs/utils/maps.utils";
+import { cn } from "@/lib/utils";
+import { getInitials } from "@/utils/string.utils";
+import { formatScheduledTime } from "@/utils/time.utils";
 
 export function JobDetailHeader({ job }: { job: Job }) {
-  const navigate = useNavigate()
-  const priority = JOB_PRIORITY_CONFIG[job.priority]
+  const navigate = useNavigate();
+  const priority = JOB_PRIORITY_CONFIG[job.priority];
 
   return (
     <header className="border-b px-6 pt-[max(1rem,env(safe-area-inset-top))] pb-4">
@@ -29,7 +30,9 @@ export function JobDetailHeader({ job }: { job: Job }) {
 
       <div className="flex items-start gap-3">
         <Avatar size="lg" className={priority.avatarClassName}>
-          <AvatarFallback className={cn('font-semibold', priority.avatarClassName)}>
+          <AvatarFallback
+            className={cn("font-semibold", priority.avatarClassName)}
+          >
             {getInitials(job.customerName)}
           </AvatarFallback>
         </Avatar>
@@ -38,7 +41,9 @@ export function JobDetailHeader({ job }: { job: Job }) {
           <p className="text-lg font-semibold leading-tight text-foreground">
             {job.customerName}
           </p>
-          <p className="text-xs font-medium text-muted-foreground">{job.jobNumber}</p>
+          <p className="text-xs font-medium text-muted-foreground">
+            {job.jobNumber}
+          </p>
         </div>
       </div>
 
@@ -56,6 +61,21 @@ export function JobDetailHeader({ job }: { job: Job }) {
         <JobPriorityBadge priority={job.priority} />
         <JobStatusBadge status={job.status} />
       </div>
+
+      {job.status !== JobStatus.COMPLETED && (
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          className="mt-3"
+          onClick={() =>
+            window.open(buildMapsUrl(job), "_blank", "noopener,noreferrer")
+          }
+        >
+          <Navigation className="size-4" />
+          Get Directions
+        </Button>
+      )}
     </header>
-  )
+  );
 }

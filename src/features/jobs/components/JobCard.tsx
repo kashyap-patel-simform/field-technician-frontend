@@ -4,18 +4,36 @@ import {
   CloudOff,
   MapPin,
   Navigation,
+  Play,
 } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { JOB_PRIORITY_CONFIG, getJobDetailsPath } from "@/constants";
 import { JobPriorityBadge } from "@/features/jobs/components/JobPriorityBadge";
 import { JobStatusBadge } from "@/features/jobs/components/JobStatusBadge";
-import type { Job } from "@/features/jobs/types/job.types";
+import { useJobStatusMutation } from "@/features/jobs/hooks/useJobStatusMutation";
+import {
+  JobAction,
+  JobStatus,
+  type Job,
+} from "@/features/jobs/types/job.types";
 import { cn } from "@/lib/utils";
 import { formatScheduledTime } from "@/utils/time.utils";
 
 export function JobCard({ job }: { job: Job }) {
   const priority = JOB_PRIORITY_CONFIG[job.priority];
+  const navigate = useNavigate();
+  const startWorkMutation = useJobStatusMutation(job.id, JobAction.START);
+  const canStartWork = job.status === JobStatus.ASSIGNED;
+
+  function handleStartWork(e: React.MouseEvent) {
+    e.preventDefault();
+    e.stopPropagation();
+    startWorkMutation.mutate(undefined, {
+      onSuccess: () => navigate(getJobDetailsPath(job.id)),
+    });
+  }
 
   return (
     <Link to={getJobDetailsPath(job.id)} className="block">
@@ -67,6 +85,19 @@ export function JobCard({ job }: { job: Job }) {
               <ChevronRight className="size-4 shrink-0 text-muted-foreground" />
             </div>
           </div>
+
+          {canStartWork && (
+            <Button
+              type="button"
+              size="sm"
+              className="w-full"
+              disabled={startWorkMutation.isPending}
+              onClick={handleStartWork}
+            >
+              <Play className="size-4" />
+              Start Work
+            </Button>
+          )}
         </CardContent>
       </Card>
     </Link>

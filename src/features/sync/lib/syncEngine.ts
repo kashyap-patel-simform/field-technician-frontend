@@ -10,8 +10,6 @@ import { uploadPhoto } from "@/features/jobs/api/photos.api";
 import {
   acceptJob,
   completeJob,
-  markArrived,
-  startNavigation,
   startWork,
 } from "@/features/jobs/api/jobs.api";
 import type { Job, JobAction } from "@/features/jobs/types/job.types";
@@ -23,8 +21,6 @@ import {
 
 const JOB_ACTION_FN: Record<JobAction, (id: string) => Promise<Job>> = {
   accept: acceptJob,
-  navigate: startNavigation,
-  arrive: markArrived,
   start: startWork,
   complete: completeJob,
 };

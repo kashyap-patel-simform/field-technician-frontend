@@ -1,15 +1,9 @@
-import {
-  CheckCircle,
-  CheckCircle2,
-  MapPin,
-  Navigation,
-  Play,
-  type LucideIcon,
-} from "lucide-react";
+import { CheckCircle, CheckCircle2, Play, type LucideIcon } from "lucide-react";
 import {
   JobFilter,
   JobPriority,
   JobStatus,
+  type Job,
 } from "@/features/jobs/types/job.types";
 
 export const JOB_FILTER_OPTIONS = [
@@ -62,19 +56,20 @@ export const JOB_STATUS_CONFIG: Record<JobStatus, { label: string }> = {
   [JobStatus.IN_PROGRESS]: { label: "In Progress" },
   [JobStatus.COMPLETED]: { label: "Completed" },
   [JobStatus.ON_HOLD]: { label: "On Hold" },
-  [JobStatus.ACCEPTED]: { label: "Accepted" },
-  [JobStatus.EN_ROUTE]: { label: "En Route" },
-  [JobStatus.ARRIVED]: { label: "Arrived" },
 };
 
-export const JOB_STATUS_ACTION_CONFIG: Partial<
-  Record<JobStatus, { label: string; icon: LucideIcon }>
-> = {
-  [JobStatus.ASSIGNED]: { label: "Accept Job", icon: CheckCircle },
-  [JobStatus.ACCEPTED]: { label: "Navigate to Customer", icon: Navigation },
-  [JobStatus.EN_ROUTE]: { label: "I've Arrived", icon: MapPin },
-  [JobStatus.ARRIVED]: { label: "Start Work", icon: Play },
-  [JobStatus.IN_PROGRESS]: { label: "Complete Job", icon: CheckCircle2 },
-};
+export function getJobActionConfig(
+  job: Pick<Job, "status" | "acceptedAt">,
+): { label: string; icon: LucideIcon } | undefined {
+  if (job.status === JobStatus.ASSIGNED) {
+    return job.acceptedAt
+      ? { label: "Start Work", icon: Play }
+      : { label: "Accept Job", icon: CheckCircle };
+  }
+  if (job.status === JobStatus.IN_PROGRESS) {
+    return { label: "Complete Job", icon: CheckCircle2 };
+  }
+  return undefined;
+}
 
 export const JOBS_SEARCH_DEBOUNCE_MS = 250;

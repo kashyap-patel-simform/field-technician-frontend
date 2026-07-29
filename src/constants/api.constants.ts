@@ -16,6 +16,9 @@ export const API_ENDPOINTS = {
     PHOTOS: (id: string) => `/jobs/${id}/photos`,
     SIGNATURE: (id: string) => `/jobs/${id}/signature`,
   },
+  NOTIFICATIONS: {
+    LIST: "/notifications",
+  },
 } as const;
 
 export const ERROR_MESSAGES = {

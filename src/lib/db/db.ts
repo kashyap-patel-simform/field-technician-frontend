@@ -8,6 +8,7 @@ import type {
   JobSignature,
   JobsSummary,
 } from "@/features/jobs/types/job.types";
+import type { Notification } from "@/features/notifications/types/notification.types";
 
 export type PhotoRow = JobPhoto & { blob?: Blob };
 export type JobsSummaryRow = JobsSummary & { id: "singleton" };
@@ -22,6 +23,7 @@ export class AppDatabase extends Dexie {
   jobsSummary!: Table<JobsSummaryRow, string>;
   outbox!: Table<OutboxItem, string>;
   meta!: Table<MetaRow, string>;
+  notifications!: Table<Notification, string>;
 
   constructor() {
     super("field-service-db");
@@ -34,6 +36,9 @@ export class AppDatabase extends Dexie {
       jobsSummary: "id",
       outbox: "localId, createdAt, jobId, entityType, status",
       meta: "key",
+    });
+    this.version(2).stores({
+      notifications: "id, createdAt, job.id",
     });
   }
 }

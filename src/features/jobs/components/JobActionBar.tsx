@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { JOB_STATUS_ACTION_CONFIG } from "@/constants";
+import { getJobActionConfig } from "@/constants";
 import { useCanCompleteJob } from "@/features/jobs/hooks/useCanCompleteJob";
 import { useJobStatusMutation } from "@/features/jobs/hooks/useJobStatusMutation";
 import {
@@ -7,17 +7,14 @@ import {
   JobStatus,
   type Job,
 } from "@/features/jobs/types/job.types";
-import { buildMapsUrl } from "@/features/jobs/utils/maps.utils";
 
 export function JobActionBar({ job }: { job: Job }) {
   const acceptMutation = useJobStatusMutation(job.id, JobAction.ACCEPT);
-  const navigateMutation = useJobStatusMutation(job.id, JobAction.NAVIGATE);
-  const arrivedMutation = useJobStatusMutation(job.id, JobAction.ARRIVE);
   const startWorkMutation = useJobStatusMutation(job.id, JobAction.START);
   const completeMutation = useJobStatusMutation(job.id, JobAction.COMPLETE);
   const { hasSignature, incompleteChecklistCount } = useCanCompleteJob(job.id);
 
-  const actionConfig = JOB_STATUS_ACTION_CONFIG[job.status];
+  const actionConfig = getJobActionConfig(job);
   if (!actionConfig) {
     return null;
   }
@@ -26,40 +23,28 @@ export function JobActionBar({ job }: { job: Job }) {
   const isComplete = job.status === JobStatus.IN_PROGRESS;
 
   function handleClick() {
-    switch (job.status) {
-      case JobStatus.ASSIGNED:
-        acceptMutation.mutate();
-        return;
-      case JobStatus.ACCEPTED:
-        window.open(buildMapsUrl(job), "_blank", "noopener,noreferrer");
-        navigateMutation.mutate();
-        return;
-      case JobStatus.EN_ROUTE:
-        arrivedMutation.mutate();
-        return;
-      case JobStatus.ARRIVED:
+    if (job.status === JobStatus.ASSIGNED) {
+      if (job.acceptedAt) {
         startWorkMutation.mutate();
-        return;
-      case JobStatus.IN_PROGRESS: {
-        if (incompleteChecklistCount > 0) {
-          const proceed = window.confirm(
-            `${incompleteChecklistCount} checklist item(s) incomplete. Complete anyway?`,
-          );
-          if (!proceed) return;
-        }
-        completeMutation.mutate();
-        return;
+      } else {
+        acceptMutation.mutate();
       }
-      default:
-        return;
+      return;
+    }
+    if (job.status === JobStatus.IN_PROGRESS) {
+      if (incompleteChecklistCount > 0) {
+        const proceed = window.confirm(
+          `${incompleteChecklistCount} checklist item(s) incomplete. Complete anyway?`,
+        );
+        if (!proceed) return;
+      }
+      completeMutation.mutate();
     }
   }
 
   const isDisabled = isComplete && !hasSignature;
   const isPending =
     acceptMutation.isPending ||
-    navigateMutation.isPending ||
-    arrivedMutation.isPending ||
     startWorkMutation.isPending ||
     completeMutation.isPending;
 

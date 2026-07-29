@@ -9,9 +9,6 @@ export type JobPriority = (typeof JobPriority)[keyof typeof JobPriority];
 
 export const JobStatus = {
   ASSIGNED: "ASSIGNED",
-  ACCEPTED: "ACCEPTED",
-  EN_ROUTE: "EN_ROUTE",
-  ARRIVED: "ARRIVED",
   IN_PROGRESS: "IN_PROGRESS",
   COMPLETED: "COMPLETED",
   ON_HOLD: "ON_HOLD",
@@ -79,8 +76,6 @@ export interface Job {
   distanceKm?: number;
   isPendingSync: boolean;
   acceptedAt?: number;
-  enRouteAt?: number;
-  arrivedAt?: number;
   startedAt?: number;
   completedAt?: number;
 }
@@ -94,8 +89,6 @@ export interface JobDetail extends Job {
 
 export const JobAction = {
   ACCEPT: "accept",
-  NAVIGATE: "navigate",
-  ARRIVE: "arrive",
   START: "start",
   COMPLETE: "complete",
 } as const;

@@ -7,6 +7,7 @@ import type {
   JobNote,
   JobsSummary,
 } from "@/features/jobs/types/job.types";
+import type { Notification } from "@/features/notifications/types/notification.types";
 
 async function getPendingEntityIds(jobId: string): Promise<Set<string>> {
   const items = await db.outbox.where("jobId").equals(jobId).toArray();
@@ -68,6 +69,15 @@ export async function writeJobs(jobs: Job[]): Promise<void> {
   const toWrite = jobs.filter((job) => !pendingJobIds.has(job.id));
   if (toWrite.length) {
     await db.jobs.bulkPut(toWrite);
+  }
+
+  const serverIds = new Set(jobs.map((job) => job.id));
+  const existingIds = await db.jobs.toCollection().primaryKeys();
+  const staleIds = existingIds.filter(
+    (id) => !serverIds.has(id) && !pendingJobIds.has(id),
+  );
+  if (staleIds.length) {
+    await db.jobs.bulkDelete(staleIds);
   }
 }
 
@@ -153,4 +163,22 @@ export async function getJobsSummaryFromDb(): Promise<JobsSummary | undefined> {
 
 export async function writeJobsSummary(summary: JobsSummary): Promise<void> {
   await db.jobsSummary.put({ id: "singleton", ...summary });
+}
+
+export async function getNotificationsFromDb(): Promise<Notification[]> {
+  return db.notifications.orderBy("createdAt").reverse().toArray();
+}
+
+export async function writeNotifications(
+  notifications: Notification[],
+): Promise<void> {
+  const serverIds = new Set(notifications.map((n) => n.id));
+  const existingIds = await db.notifications.toCollection().primaryKeys();
+  const staleIds = existingIds.filter((id) => !serverIds.has(id));
+  if (staleIds.length) {
+    await db.notifications.bulkDelete(staleIds);
+  }
+  if (notifications.length) {
+    await db.notifications.bulkPut(notifications);
+  }
 }

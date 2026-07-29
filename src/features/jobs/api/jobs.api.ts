@@ -51,12 +51,6 @@ async function performJobAction(id: string, action: JobAction): Promise<Job> {
 export const acceptJob = (id: string) =>
   performJobAction(id, JobActionValues.ACCEPT);
 
-export const startNavigation = (id: string) =>
-  performJobAction(id, JobActionValues.NAVIGATE);
-
-export const markArrived = (id: string) =>
-  performJobAction(id, JobActionValues.ARRIVE);
-
 export const startWork = (id: string) =>
   performJobAction(id, JobActionValues.START);
 

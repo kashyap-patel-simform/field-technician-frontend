@@ -10,12 +10,6 @@ import { JobSignaturePad } from "@/features/jobs/components/JobSignaturePad";
 import { useJob } from "@/features/jobs/hooks/useJob";
 import { JobStatus } from "@/features/jobs/types/job.types";
 
-const ARRIVED_OR_LATER: string[] = [
-  JobStatus.ARRIVED,
-  JobStatus.IN_PROGRESS,
-  JobStatus.COMPLETED,
-];
-
 const IN_PROGRESS_OR_LATER: string[] = [
   JobStatus.IN_PROGRESS,
   JobStatus.COMPLETED,
@@ -50,7 +44,7 @@ export function JobDetailsPage() {
       <JobDetailHeader job={job} />
 
       <div className="flex flex-1 flex-col gap-4 px-6 pt-4 pb-28">
-        {ARRIVED_OR_LATER.includes(job.status) && (
+        {IN_PROGRESS_OR_LATER.includes(job.status) && (
           <JobChecklist
             jobId={job.id}
             disabled={job.status === JobStatus.COMPLETED}
