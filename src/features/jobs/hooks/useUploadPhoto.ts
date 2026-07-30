@@ -10,12 +10,14 @@ export function useUploadPhoto(jobId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
+    networkMode: "always",
     mutationFn: async (file: File) => {
       const blob = await compressImage(file);
       const photo: PhotoRow = {
         id: `temp-${crypto.randomUUID()}`,
         jobId,
         previewUrl: "",
+        thumbnailUrl: null,
         capturedAt: Date.now(),
         isPendingSync: true,
         blob,

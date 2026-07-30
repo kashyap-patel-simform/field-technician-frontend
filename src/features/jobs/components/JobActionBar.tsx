@@ -1,5 +1,6 @@
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { getJobActionConfig } from "@/constants";
+import { ROUTES, getJobActionConfig } from "@/constants";
 import { useCanCompleteJob } from "@/features/jobs/hooks/useCanCompleteJob";
 import { useJobStatusMutation } from "@/features/jobs/hooks/useJobStatusMutation";
 import {
@@ -9,6 +10,7 @@ import {
 } from "@/features/jobs/types/job.types";
 
 export function JobActionBar({ job }: { job: Job }) {
+  const navigate = useNavigate();
   const acceptMutation = useJobStatusMutation(job.id, JobAction.ACCEPT);
   const startWorkMutation = useJobStatusMutation(job.id, JobAction.START);
   const completeMutation = useJobStatusMutation(job.id, JobAction.COMPLETE);
@@ -38,7 +40,9 @@ export function JobActionBar({ job }: { job: Job }) {
         );
         if (!proceed) return;
       }
-      completeMutation.mutate();
+      completeMutation.mutate(undefined, {
+        onSuccess: () => navigate(ROUTES.JOBS),
+      });
     }
   }
 

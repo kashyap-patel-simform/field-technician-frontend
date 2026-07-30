@@ -78,18 +78,26 @@ export function JobPhotos({ jobId }: { jobId: string }) {
   async function handleUploadStaged() {
     if (stagedPhotos.length === 0 || isUploadingAll) return;
     setIsUploadingAll(true);
-    const toUpload = stagedPhotos;
-    setStagedPhotos([]);
     setStagingError(null);
+    const toUpload = stagedPhotos;
+    let hadFailure = false;
 
-    try {
-      for (const staged of toUpload) {
+    for (const staged of toUpload) {
+      try {
         await uploadMutation.mutateAsync(staged.file);
+        setStagedPhotos((current) =>
+          current.filter((item) => item.id !== staged.id),
+        );
         URL.revokeObjectURL(staged.previewUrl);
+      } catch {
+        hadFailure = true;
       }
-    } finally {
-      setIsUploadingAll(false);
     }
+
+    if (hadFailure) {
+      setStagingError(PHOTO_UPLOAD_MESSAGES.QUEUE_FAILED);
+    }
+    setIsUploadingAll(false);
   }
 
   const hasContent = (photos?.length ?? 0) > 0 || stagedPhotos.length > 0;
@@ -185,7 +193,7 @@ export function JobPhotos({ jobId }: { jobId: string }) {
               className="relative aspect-square overflow-hidden rounded-lg border"
             >
               <img
-                src={photo.previewUrl}
+                src={photo.thumbnailUrl ?? photo.previewUrl}
                 alt="Job site"
                 className="size-full object-cover"
               />

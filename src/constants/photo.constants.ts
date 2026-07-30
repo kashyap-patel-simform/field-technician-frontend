@@ -8,4 +8,5 @@ export const PHOTO_UPLOAD_MESSAGES = {
   TOO_MANY_PHOTOS: `You can stage up to ${PHOTO_UPLOAD_CONSTANTS.MAX_STAGED_PHOTOS} photos at a time.`,
   FILE_TOO_LARGE: "One or more photos are too large (max 15MB).",
   NO_PHOTOS_YET: "No photos added yet.",
+  QUEUE_FAILED: "Couldn't save one or more photos. Please try again.",
 } as const;

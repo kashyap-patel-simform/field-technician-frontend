@@ -45,6 +45,7 @@ export interface JobPhoto {
   id: string;
   jobId: string;
   previewUrl: string;
+  thumbnailUrl: string | null;
   capturedAt: number;
   isPendingSync: boolean;
 }

@@ -16,5 +16,11 @@ export async function uploadPhoto(
     formData,
   );
   const photo = unwrap(response);
-  return { ...photo, previewUrl: toAbsoluteUploadUrl(photo.previewUrl) };
+  return {
+    ...photo,
+    previewUrl: toAbsoluteUploadUrl(photo.previewUrl),
+    thumbnailUrl: photo.thumbnailUrl
+      ? toAbsoluteUploadUrl(photo.thumbnailUrl)
+      : null,
+  };
 }
